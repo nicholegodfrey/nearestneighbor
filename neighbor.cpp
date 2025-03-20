@@ -11,10 +11,38 @@
 
 using namespace std;
 
-double leave_one_out_cross_validation(vector<vector<double> > data, vector <int> curr_set, int feature) {
-   //return val between 0 and 1
-    return rand() / (RAND_MAX + 1.0);
-    //fix
+double leave_one_out_cross_validation(vector<vector<double> > data, vector <int> currSet, int feature) {
+    double accuracy = 0.0;
+    double nnLabel=0.0;  
+    vector<int> tempSet=currSet;
+    if (feature != -1) {
+        tempSet.push_back(feature);
+    }
+    for (int i = 0; i < data.size(); i++) {
+        double labelObjectClassify = data[i][0];
+        double nnDistance = INT_MAX;
+        double nnLocation = INT_MAX;
+        vector<double> objectClassify(data[i].begin() + 1, data[i].end());
+        for (int j = 0; j < data.size(); j++) {
+            if (i != j) {
+            double distance = 0.0;
+            for (int k = 0; k < tempSet.size(); k++) {
+                distance += pow(data[i][tempSet[k]] - data[j][tempSet[k]], 2);
+            }
+           distance = sqrt(distance);
+            if (distance < nnDistance) {
+                nnDistance = distance;
+                nnLocation = j;
+                nnLabel = data[nnLocation][0];
+            }
+        }
+        }
+        if (labelObjectClassify == nnLabel) {
+            accuracy++;
+        }
+    }
+    return (double)accuracy / data.size();
+   
 }
 void forwardSelection(vector<vector<double> > data){
     //initialize an empty set
@@ -125,10 +153,11 @@ void backwardsElimination(vector<vector<double> > data){
                         tempSet.push_back(currSet[j]);
                     }
                 }  
+                //tempSet.erase(remove(tempSet.begin(), tempSet.end(), currSet[k]), tempSet.end());
                 if (tempSet.empty()) {
                     continue;
                 }
-                accuracy=leave_one_out_cross_validation(data, tempSet,k);
+                accuracy=leave_one_out_cross_validation(data, tempSet,-1);
                 
                 cout << "Using feature(s) {" ;
                 for(int j=0; j<tempSet.size(); j++){
@@ -143,6 +172,7 @@ void backwardsElimination(vector<vector<double> > data){
                 if(accuracy>bestSoFarAccuracy){
                     bestSoFarAccuracy=accuracy;
                     featureRemove=k;
+                    //cout << "Removing the " << k << endl<<  currSet[k] << " feature" << endl;
                 }
         }
         
@@ -151,7 +181,7 @@ void backwardsElimination(vector<vector<double> > data){
         }
         int featureToRemove = currSet[featureRemove];  
         currSet.erase(remove(currSet.begin(), currSet.end(), featureToRemove), currSet.end());
-    if(bestSoFarAccuracy>bestAccuracy){
+        if(bestSoFarAccuracy>=bestAccuracy){
             bestAccuracy=bestSoFarAccuracy;
             bestSet=currSet;
         }
