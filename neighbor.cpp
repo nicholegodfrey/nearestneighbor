@@ -74,7 +74,7 @@ void forwardSelection(vector<vector<double>> data)
     {
         tempSet.push_back(i);
     }
-    double accuracy = leave_one_out_cross_validation(data, tempSet, 0);
+    double accuracy = leave_one_out_cross_validation(data, tempSet, -1);
     cout << "Running nearest neighbor with all " << data[0].size() - 1 << " features, using \"leaving-one-out\" evaluation, I get an accuracy of " << accuracy * 100 << "%" << endl;
     cout << endl
          << "Beginning search." << endl;
@@ -150,7 +150,26 @@ void forwardSelection(vector<vector<double>> data)
     }
     cout << "}, which has an accuracy of " << bestAccuracy * 100 << "%" << endl;
 }
+double accuracywithnofeatures(vector<vector<double>> data)
+{
+    double class1 = 0.0; 
+    double class2 = 0.0; 
+    double accuracy = 0.0; 
+    for(int i = 0; i < data.size(); i++)
+    {
+        if(data[i][0] == 1)
+        {
+            class1++; 
+        }
+        else if(data[i][0] == 2)
+        {
+            class2++;
+        }
 
+    }
+    accuracy = max(class1,class2) / data.size(); 
+    return accuracy * 100; 
+}
 //backwards search, start with all, remove features
 void backwardsElimination(vector<vector<double>> data)
 {
@@ -300,6 +319,7 @@ int main()
          << endl;
     int algorithm = 0;
     cin >> algorithm;
+    cout << "Base case accuracy is " << accuracywithnofeatures(data) << "%" << endl;
     cout << "This dataset has " << data[0].size() - 1 << " features (not including the class attribute), with " << data.size() << " instances." << endl;
     if (algorithm == 1)
     {
@@ -316,7 +336,7 @@ int main()
         backwardsElimination(data);
         auto end = chrono::high_resolution_clock::now();
         chrono::duration<double> elapsed = end - start;
-        cout << "Time to run: " << setprecision(2) << elapsed.count() << " seconds" << endl;
+        cout << "Time to run: " << setprecision(3) << elapsed.count() << " seconds" << endl;
     }
     else
     {
